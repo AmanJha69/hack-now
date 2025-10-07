@@ -1,4 +1,4 @@
-# ✅ Use a stable Python version for ML support
+# ✅ Use a stable Python version that supports ML libraries
 FROM python:3.10-slim
 
 # ✅ Install system dependencies and build tools
@@ -14,27 +14,25 @@ RUN apt-get update && apt-get install -y \
     libfontconfig1 \
     && rm -rf /var/lib/apt/lists/*
 
-# ✅ Set the working directory
+# ✅ Set working directory
 WORKDIR /app
 
-# ✅ Copy requirements.txt first to leverage Docker cache
+# ✅ Copy requirements.txt first (for caching)
 COPY requirements.txt /app/
 
-# ✅ Upgrade pip and install dependencies
+# ✅ Upgrade pip & install dependencies
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# ✅ Copy the entire project
+# ✅ Copy the rest of your app
 COPY . /app/
 
-# ✅ Set environment variables (for Tesseract and locale)
+# ✅ Set environment variables
 ENV TESSDATA_PREFIX=/usr/share/
 ENV LANG=C.UTF-8
 
-# ✅ Expose port for FastAPI
+# ✅ Expose FastAPI default port
 EXPOSE 8000
 
-# ✅ Run the FastAPI app (no --reload in production)
+# ✅ Start the FastAPI app (no --reload in production)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-
