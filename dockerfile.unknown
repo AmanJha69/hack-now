@@ -1,8 +1,11 @@
-# Use official Python image as base image
-FROM python:3.9-slim
+# ✅ Use a stable Python version for ML support
+FROM python:3.10-slim
 
-# Install dependencies
+# ✅ Install system dependencies and build tools
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    python3-dev \
     tesseract-ocr \
     libsm6 \
     libxext6 \
@@ -11,24 +14,27 @@ RUN apt-get update && apt-get install -y \
     libfontconfig1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
+# ✅ Set the working directory
 WORKDIR /app
 
-# Copy requirements.txt first to leverage Docker cache for pip install
+# ✅ Copy requirements.txt first to leverage Docker cache
 COPY requirements.txt /app/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# ✅ Upgrade pip and install dependencies
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project
+# ✅ Copy the entire project
 COPY . /app/
 
-# Set environment variables (useful for Tesseract if necessary)
+# ✅ Set environment variables (for Tesseract and locale)
 ENV TESSDATA_PREFIX=/usr/share/
 ENV LANG=C.UTF-8
 
-# Expose port 8000
+# ✅ Expose port for FastAPI
 EXPOSE 8000
 
-# Run the FastAPI application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# ✅ Run the FastAPI app (no --reload in production)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
