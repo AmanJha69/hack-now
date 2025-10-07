@@ -1,0 +1,34 @@
+# Use official Python image as base image
+FROM python:3.9-slim
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libglib2.0-0 \
+    libfontconfig1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /app
+
+# Copy requirements.txt first to leverage Docker cache for pip install
+COPY requirements.txt /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project
+COPY . /app/
+
+# Set environment variables (useful for Tesseract if necessary)
+ENV TESSDATA_PREFIX=/usr/share/
+ENV LANG=C.UTF-8
+
+# Expose port 8000
+EXPOSE 8000
+
+# Run the FastAPI application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
